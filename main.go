@@ -325,8 +325,12 @@ func main() {
 			signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 			defer signal.Stop(sigChan)
 			go func() {
-				<-sigChan
-				cancel()
+				select {
+				case <-sigChan:
+					cancel()
+				case <-ctx.Done():
+					// Context cancelled or timed out, exit goroutine
+				}
 			}()
 
 			if err := cmd.Start(); err != nil {
