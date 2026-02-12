@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 	"sync"
 	"syscall"
@@ -53,6 +55,7 @@ var (
 	waitFlag          hostFlagsVar
 	waitRetryInterval time.Duration
 	waitTimeoutFlag   time.Duration
+	cmdTimeoutFlag    time.Duration
 	dependencyChan    chan struct{}
 	noOverwriteFlag   bool
 )
@@ -220,6 +223,7 @@ func main() {
 	flag.Var(&waitFlag, "wait", "Host (tcp/tcp4/tcp6/http/https/unix/file) to wait for before this container starts. Can be passed multiple times. e.g. tcp://db:5432")
 	flag.DurationVar(&waitTimeoutFlag, "timeout", 10*time.Second, "Host wait timeout")
 	flag.DurationVar(&waitRetryInterval, "wait-retry-interval", defaultWaitRetryInterval, "Duration to wait before retrying")
+	flag.DurationVar(&cmdTimeoutFlag, "cmd-timeout", 0, "Command execution timeout (0 means no timeout)")
 
 	flag.Usage = usage
 	flag.Parse()
@@ -292,14 +296,48 @@ func main() {
 	waitForDependencies()
 
 	if flag.NArg() > 0 {
-		cmd := flag.Arg(0)
-		cmdPath, err := exec.LookPath(cmd)
-		if err != nil {
-			log.Fatalf("Error looking up command: `%s` - %s\n", cmd, err)
-		}
-		argv := append([]string{cmd}, flag.Args()[1:]...)
-		if err := syscall.Exec(cmdPath, argv, os.Environ()); err != nil {
-			log.Fatalf("Error executing command: `%s` - %s\n", cmd, err)
+		cmdName := flag.Arg(0)
+		cmdArgs := flag.Args()[1:]
+
+		// If no command timeout is specified, use syscall.Exec for backward compatibility
+		if cmdTimeoutFlag == 0 {
+			cmdPath, err := exec.LookPath(cmdName)
+			if err != nil {
+				log.Fatalf("Error looking up command: `%s` - %s\n", cmdName, err)
+			}
+			argv := append([]string{cmdName}, cmdArgs...)
+			if err := syscall.Exec(cmdPath, argv, os.Environ()); err != nil {
+				log.Fatalf("Error executing command: `%s` - %s\n", cmdName, err)
+			}
+		} else {
+			// Use exec.CommandContext for timeout support
+			ctx, cancel := context.WithTimeout(context.Background(), cmdTimeoutFlag)
+			defer cancel()
+
+			cmd := exec.CommandContext(ctx, cmdName, cmdArgs...)
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			cmd.Env = os.Environ()
+
+			// Handle signals
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+			go func() {
+				<-sigChan
+				cancel()
+			}()
+
+			if err := cmd.Start(); err != nil {
+				log.Fatalf("Error starting command: `%s` - %s\n", cmdName, err)
+			}
+
+			if err := cmd.Wait(); err != nil {
+				if ctx.Err() == context.DeadlineExceeded {
+					log.Fatalf("Killing command due to timeout (%s): `%s`\n", cmdTimeoutFlag, cmdName)
+				}
+				log.Fatalf("Error executing command: `%s` - %s\n", cmdName, err)
+			}
 		}
 	}
 }
