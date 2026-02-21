@@ -47,3 +47,7 @@ release: dist
 	tar -cvzf dockerize-darwin-arm64-$(TAG).tar.gz -C dist/darwin/arm64 dockerize
 	tar -cvzf dockerize-linux-s390x-$(TAG).tar.gz -C dist/linux/s390x dockerize
 	tar -cvzf dockerize-linux-riscv64-$(TAG).tar.gz -C dist/linux/riscv64 dockerize
+
+.PHONY: test
+test:
+	go test -v ./...
