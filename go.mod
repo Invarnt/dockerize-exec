@@ -1,4 +1,4 @@
-module github.com/invarnt/dockerize
+module github.com/invarnt/dockerize-exec
 
 go 1.26.0
 
