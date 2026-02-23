@@ -21,16 +21,16 @@ See [A Simple Way To Dockerize Applications](http://jasonwilder.com/blog/2014/10
 ## Installation
 
 Download the latest version in your container:
-- https://github.com/invarnt/dockerize/releases/
+- https://github.com/invarnt/dockerize-exec/releases/
 
 ### Ubuntu Images
 
 ``` Dockerfile
-ENV DOCKERIZE_VERSION v0.1.0
+ENV DOCKERIZE_VERSION v0.1.1
 
 RUN apt-get update \
     && apt-get install -y wget \
-    && wget -O - https://github.com/invarnt/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz | tar xzf - -C /usr/local/bin \
+    && wget -O - https://github.com/invarnt/dockerize-exec/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz | tar xzf - -C /usr/local/bin \
     && apt-get autoremove -yqq --purge wget && rm -rf /var/lib/apt/lists/*
 ```
 
@@ -38,11 +38,11 @@ RUN apt-get update \
 ### For Alpine Images:
 
 ``` Dockerfile
-ENV DOCKERIZE_VERSION v0.1.0
+ENV DOCKERIZE_VERSION v0.1.1
 
 RUN apk update --no-cache \
     && apk add --no-cache wget openssl \
-    && wget -O - https://github.com/invarnt/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz | tar xzf - -C /usr/local/bin \
+    && wget -O - https://github.com/invarnt/dockerize-exec/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz | tar xzf - -C /usr/local/bin \
     && apk del wget
 ```
 
