@@ -1,4 +1,4 @@
-dockerize ![version v0.1.7](https://img.shields.io/badge/version-v0.1.7-brightgreen.svg) ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+dockerize ![version v0.1.8](https://img.shields.io/badge/version-v0.1.8-brightgreen.svg) ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 =============
 
 Utility to simplify running applications in docker containers.
@@ -26,7 +26,7 @@ Download the latest version in your container:
 ### Ubuntu Images
 
 ``` Dockerfile
-ENV DOCKERIZE_VERSION v0.1.7
+ENV DOCKERIZE_VERSION v0.1.8
 
 RUN apt-get update \
     && apt-get install -y wget \
@@ -38,7 +38,7 @@ RUN apt-get update \
 ### For Alpine Images:
 
 ``` Dockerfile
-ENV DOCKERIZE_VERSION v0.1.7
+ENV DOCKERIZE_VERSION v0.1.8
 
 RUN apk update --no-cache \
     && apk add --no-cache wget openssl \

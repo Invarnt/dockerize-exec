@@ -10,8 +10,8 @@ RUN <<EOF
     ln -sf /dev/stderr /var/log/nginx/error.log
 EOF
 
-RUN wget https://github.com/invarnt/dockerize-exec/releases/download/v0.1.7/dockerize-linux-amd64-v0.1.7.tar.gz \
-    && tar -C /usr/local/bin -xvzf dockerize-linux-amd64-v0.1.7.tar.gz
+RUN wget https://github.com/invarnt/dockerize-exec/releases/download/v0.1.8/dockerize-linux-amd64-v0.1.8.tar.gz \
+    && tar -C /usr/local/bin -xvzf dockerize-linux-amd64-v0.1.8.tar.gz
 
 ADD default.tmpl /etc/nginx/sites-available/default.tmpl
 
